@@ -29,8 +29,8 @@ Docker cli documentation:
 Depending on what environment the application is running in, the process.env file is mounted with different values. The application looks for a `.env` file when running in development, and a `.env.prod` file when running in production. Note that in the Dockerfile the application is defaulted to production, and is run in development when using docker-compose. Here are the current keys required in the environment file:
 
 ```
-CONTROLLER_DIR
-PORT
+BASE_DIR
+MONGO_URI
 ```
 
 Be sure to create these files after cloning the project. Note that the Docker container is using the following directory as the root for the application: `/opt/app/`
@@ -38,6 +38,10 @@ Be sure to create these files after cloning the project. Note that the Docker co
 #### Controllers & Routes
 
 The current controller class handles routing in the constructor. Looking into `utilities/route-builder.ts` will show that we are looking into the `controllers` directory and reading all the files into an array. From there we pass the router directly into the controller constructor, to mount all the routes to the application automatically! Anytime a new controller is added the app will pick it up and attach any given routes. Use the existing controller as a template for any additional controllers!
+
+#### Database
+
+The current implementation is with mongodb and mongoose. This can easily be switched out for any db, simply by changing the `db.ts` module. The module will read all of the models from the models directory, and attach them to the app.
 
 #### Express Views
 
