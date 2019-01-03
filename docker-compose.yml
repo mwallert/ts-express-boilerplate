@@ -1,0 +1,32 @@
+version: '2.3'
+
+services:
+  mongo:
+    image: mongo:4
+    networks:
+      - node_network
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+  server:
+    build:
+      context: .
+      args:
+        - NODE_ENV=development
+    command: tsc-watch --onSuccess "node ./dist/server.js"
+    depends_on:
+      - mongo
+    networks:
+      - node_network
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/opt/app:delegated
+      - ./package.json:/opt/package.json
+      - notused:/opt/app/node_modules
+volumes:
+  mongo_data:
+  notused:
+networks:
+  node_network:

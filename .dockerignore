@@ -1,0 +1,10 @@
+.git
+.gitignore
+.elasticbeanstalk
+.DS_Store
+.dockerignore
+Dockerrun.aws.json
+node_modules
+README.md
+Dockerfile
+docker-compose.yml

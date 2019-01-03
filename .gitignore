@@ -1,0 +1,19 @@
+# Ide files
+.idea
+.DS_Store
+
+# Misc
+node_modules
+npm-debug.log
+
+# Compiled files
+dist
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# Environment files
+.env
+.env.prod

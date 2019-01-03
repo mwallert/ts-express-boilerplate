@@ -1,0 +1,6 @@
+extends layout
+
+block mainContent
+  h1 Error message: #{message}
+  h2 Error status: #{error.status}
+  pre #{error.stack}
