@@ -6,13 +6,14 @@ import * as dotenv from 'dotenv';
 import * as logger from 'morgan';
 import * as helmet from 'helmet';
 import * as cors from 'cors';
+import * as cookieParser from 'cookie-parser';
 import { UnprotectedRoute } from './types/unprotected-route';
-import jwtModule from './utilities/jwt';
 
 dotenv.config({ path: process.env.NODE_ENV === 'development' ? '.env' : '.env.prod' });
 
 import routeBuilder from './utilities/route-builder';
 import init from './utilities/db';
+import jwtModule from './utilities/jwt';
 
 init();
 
@@ -21,7 +22,7 @@ app.use(helmet({
   hidePoweredBy: true,
   noCache: true
 }));
-
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.set('port', process.env.PORT || 3000);
 app.use(logger('dev'));
 app.set('views', 'views');

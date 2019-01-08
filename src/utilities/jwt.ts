@@ -2,23 +2,25 @@ import * as jwt from 'jsonwebtoken';
 
 import User from '../models/user';
 
-function sign(payload, options){
-  const jwtToken = jwt.sign(payload, process.env.TOKEN_SECRET, options);
+const secret = process.env.TOKEN_SECRET;
+
+function sign(payload, options) {
+  const jwtToken = jwt.sign(payload, secret, options);
   return jwtToken;
 }
 
-function verify(token){
+function verify(token) {
   try {
-    return jwt.verify(token, process.env.TOKEN_SECRET);
+    return jwt.verify(token, secret);
   } catch(err) {
     return null;
   }
 }
 
 async function protect(req, res, next) {
-  if(!req.headers.authorization) return res.status(401).json({error: 'Missing authorization header'});
+  if(!req.signedCookies.auth_token) return res.status(401).json({error: 'Access denied.'});
 
-  const user = await verify(req.headers.authorization.split('Bearer ')[1]);
+  const user = await verify(req.signedCookies.auth_token);
 
   if(!user) return res.status(401).json({error: 'Invalid authorization header'});
 

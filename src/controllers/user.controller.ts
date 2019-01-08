@@ -43,8 +43,11 @@ class UserController {
 
         if(!isMatch) return res.status(401).json({error: 'Incorrect username or password'});
         else {
+          const token: string = jwtModule.sign({_id: user._id}, {expiresIn: '12h'});
+          res.cookie('auth_token', token, {maxAge: 720000, httpOnly: true, signed: true});
+
           return res.status(200).json({
-            token: jwtModule.sign({_id: user._id}, {expiresIn: '12h'}),
+            token: token,
             user: _.omit(user._doc, 'password', '__v')
           });
         }
