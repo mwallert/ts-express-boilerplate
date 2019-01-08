@@ -31,6 +31,7 @@ Depending on what environment the application is running in, the process.env fil
 ```
 BASE_DIR
 MONGO_URI
+COOKIE_SECRET
 ```
 
 Be sure to create these files after cloning the project. Note that the Docker container is using the following directory as the root for the application: `/opt/app/`
@@ -39,13 +40,37 @@ Be sure to create these files after cloning the project. Note that the Docker co
 
 The current controller class handles routing in the constructor. Looking into `utilities/route-builder.ts` will show that we are looking into the `controllers` directory and reading all the files into an array. From there we pass the router directly into the controller constructor, to mount all the routes to the application automatically! Anytime a new controller is added the app will pick it up and attach any given routes. Use the existing controller as a template for any additional controllers!
 
+#### Route Protection
+
+All routes are protected by jwt authentication (see authentication below). If you need a route to be unprotected for some reason, simply add it to the following block of code in `app.ts`:
+
+```
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const unprotectedRoutes: UnprotectedRoute[] = [
+    {path: '/api/v1/users/login', method: 'POST'},
+    {path: '/api/v1/users', method: 'POST'}
+  ];
+
+  const unprotectedRequest = unprotectedRoutes.find(route => req.path === route.path && req.method === route.method);
+
+  if(unprotectedRequest) next();
+  else jwtModule.protect(req, res, next);
+});
+```
+
+The block above is used to protect all routes by default, and only allow specific routes/methods to go through the api without checking for authentication cookies. Simply add the path (route name) and method (GET, POST, PUT, DELETE) to whitelist a route/method.
+
 #### Database
 
 The current implementation is with mongodb and mongoose. This can easily be switched out for any db, simply by changing the `db.ts` module. The module will read all of the models from the models directory, and attach them to the app.
 
 #### Express Views
 
-The app is currently using [Pug](https://github.com/pugjs/pug) as the template engine. This allows for error rendering, emails and more! The syntax is a little weird if you are used to just html5, but it makes for easier template building (imo)
+The app is currently using [Pug](https://github.com/pugjs/pug) as the template engine. This allows for error rendering, emails and more! The syntax is a little weird if you are used to just html5, but it makes for easier template building (imo).
+
+#### Authentication
+
+JWT (jsonwebtoken) is the current method of authentication. When logging into the system simply add a cookie to the response containing the token. There is an example of this in the `users.controller.ts` handling login. When a request comes in through the application, the app checks for an `auth_token` in the signed cookies to allow for access to the api. If the cookie is not present then a `401` response status is returned and the request dies there.
 
 #### Building The Docker Container For Deployment
 
