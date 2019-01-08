@@ -5,6 +5,9 @@ import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import * as logger from 'morgan';
 import * as helmet from 'helmet';
+import * as cors from 'cors';
+import { UnprotectedRoute } from './types/unprotected-route';
+import jwtModule from './utilities/jwt';
 
 dotenv.config({ path: process.env.NODE_ENV === 'development' ? '.env' : '.env.prod' });
 
@@ -14,7 +17,10 @@ import init from './utilities/db';
 init();
 
 const app = express();
-app.use(helmet());
+app.use(helmet({
+  hidePoweredBy: true,
+  noCache: true
+}));
 
 app.set('port', process.env.PORT || 3000);
 app.use(logger('dev'));
@@ -24,6 +30,28 @@ app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
+app.options('*', cors());
+const devWhitelist: RegExp[] = [
+    /http:\/\/localhost(?::\d{1,5})?$/
+  ],
+  prodWhitelist: RegExp[] = [];
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'development' ? devWhitelist : prodWhitelist
+}));
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const unprotectedRoutes: UnprotectedRoute[] = [
+    {path: '/api/v1/users/login', method: 'POST'},
+    {path: '/api/v1/users', method: 'POST'}
+  ];
+
+  const unprotectedRequest = unprotectedRoutes.find(route => req.path === route.path && req.method === route.method);
+
+  if(unprotectedRequest) next();
+  else jwtModule.protect(req, res, next);
+});
 
 routeBuilder(app);
 
