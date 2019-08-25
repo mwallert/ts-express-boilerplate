@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction, Router } from 'express';
-import * as _ from 'lodash';
-
-import User from '../models/user';
 
 import jwtModule from '../utilities/jwt';
+
+import * as _ from 'lodash';
+import * as mongoose from 'mongoose';
+
+const User = mongoose.model('User');
 
 class UserController {
   constructor(
@@ -18,17 +20,25 @@ class UserController {
   }
 
   async getUsers(req: Request, res: Response, next: NextFunction) {
-    const users = await User.find({});
+    try {
+      const users = await User.find({});
 
-    return res.status(200).json(users);
+      return res.status(200).json(users);
+    } catch (error) {
+      next(error);
+    }
   }
 
   async createUser(req: Request, res: Response, next: NextFunction) {
-    const newUser = new User(req.body);
+    try {
+      const newUser = new User(req.body);
 
-    const savedUser = await newUser.save();
+      const savedUser = await newUser.save();
 
-    return res.status(200).json(savedUser);
+      return res.status(200).json(savedUser);
+    } catch (error) {
+      next(error);
+    }
   }
 
   async loginUser(req: Request, res: Response, next: NextFunction) {
@@ -44,10 +54,11 @@ class UserController {
         if(!isMatch) return res.status(401).json({error: 'Incorrect username or password'});
         else {
           const token: string = jwtModule.sign({_id: user._id}, {expiresIn: '12h'});
+
+          // 36000000ms = 12h cookie life
           res.cookie('auth_token', token, {maxAge: 720000, httpOnly: true, signed: true});
 
           return res.status(200).json({
-            token: token,
             user: _.omit(user._doc, 'password', '__v')
           });
         }

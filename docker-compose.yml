@@ -22,11 +22,13 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - .:/opt/app:delegated
-      - ./package.json:/opt/package.json
-      - notused:/opt/app/node_modules
+      - .:/opt/node_app/app:delegated
+      - ./package.json:/opt/node_app/package.json
+      - notused:/opt/node_app/app/node_modules
+      - notused_dist:/opt/node_app/app/dist
 volumes:
   mongo_data:
   notused:
+  notused_dist:
 networks:
   node_network:

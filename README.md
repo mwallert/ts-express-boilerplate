@@ -26,15 +26,16 @@ Docker cli documentation:
 
 #### Environment Files
 
-Depending on what environment the application is running in, the process.env file is mounted with different values. The application looks for a `.env` file when running in development, and a `.env.prod` file when running in production. Note that in the Dockerfile the application is defaulted to production, and is run in development when using docker-compose. Here are the current keys required in the environment file:
+Depending on what environment the application is running in, the process.env file is mounted with different values. The application looks for a `.env` file when running in development. Note that in the Dockerfile the application is defaulted to production, and is run in development when using docker-compose. Here are the current keys required in the environment file:
 
 ```
 BASE_DIR
 MONGO_URI
+TOKEN_SECRET
 COOKIE_SECRET
 ```
 
-Be sure to create these files after cloning the project. Note that the Docker container is using the following directory as the root for the application: `/opt/app/`
+Be sure to create these files after cloning the project. Note that the Docker container is using the following directory as the root for the application: `/opt/node_app/app`
 
 #### Controllers & Routes
 
@@ -74,7 +75,7 @@ JWT (jsonwebtoken) is the current method of authentication. When logging into th
 
 #### Building The Docker Container For Deployment
 
-Deploying the app is extremely simple thanks to Docker! The application is currently set to read the NODE_ENV and attach a different env file accordingly. If the application is running in `development` mode, the path to the env file is `.env`, otherwise it will look for `.env.prod`. The Dockerfile is set to build in production mode automatically, this is only overwritten during development when using the `docker-compose.yml` file. Run the following commands from the root of the project to build the container:
+Deploying the app is extremely simple thanks to Docker! The application is currently set to read the NODE_ENV and attach a different env file accordingly. If the application is running in `development` mode, the path to the env file is `.env`, otherwise it will expect it to be inserted through the process dynamically (EB uses the panel to store environment variables as an example). The Dockerfile is set to build in production mode automatically, this is only overwritten during development when using the `docker-compose.yml` file. Run the following commands from the root of the project to build the container:
 
 1. Run `tsc` to compile your files down to `js` for deployment.
 2. Log in to your docker repository from the command line.

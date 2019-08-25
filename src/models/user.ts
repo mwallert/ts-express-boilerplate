@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import * as bcrypt from 'bcrypt-nodejs';
+import * as bcrypt from 'bcrypt';
 
 const UserSchema = new mongoose.Schema({
   first_name: {
@@ -30,13 +30,13 @@ const UserSchema = new mongoose.Schema({
 type comparePasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
 
 UserSchema.pre("save", function save(next) {
-  const user = this;
-  if (!user.isModified("password")) { return next(); }
+  if (!this.isModified("password")) { return next(); }
+
   bcrypt.genSalt(10, (err, salt) => {
     if (err) { return next(err); }
-    bcrypt.hash(user.password, salt, undefined, (err: mongoose.Error, hash) => {
+    bcrypt.hash(this.password, salt, (err: mongoose.Error, hash) => {
       if (err) { return next(err); }
-      user.password = hash;
+      this.password = hash;
       next();
     });
   });
@@ -48,7 +48,9 @@ const comparePassword: comparePasswordFunction = function (candidatePassword, cb
   });
 };
 
-UserSchema.methods.comparePassword = comparePassword;
+// Add any new methods to the assign object
+Object.assign(UserSchema.methods, {
+  comparePassword
+});
 
-const User = mongoose.model('User', UserSchema);
-export default User;
+mongoose.model('User', UserSchema);

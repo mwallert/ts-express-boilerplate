@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { UnprotectedRoute } from './types/unprotected-route';
+
 import * as express from 'express';
 import * as compression from 'compression';
 import * as bodyParser from 'body-parser';
@@ -7,30 +9,16 @@ import * as logger from 'morgan';
 import * as helmet from 'helmet';
 import * as cors from 'cors';
 import * as cookieParser from 'cookie-parser';
-import { UnprotectedRoute } from './types/unprotected-route';
-
-dotenv.config({ path: process.env.NODE_ENV === 'development' ? '.env' : '.env.prod' });
-
-import routeBuilder from './utilities/route-builder';
 import init from './utilities/db';
-import jwtModule from './utilities/jwt';
+
+if (process.env.NODE_ENV === 'development') dotenv.config({path: '.env'});
 
 init();
 
+import routeBuilder from './utilities/route-builder';
+import jwtModule from './utilities/jwt';
+
 const app = express();
-app.use(helmet({
-  hidePoweredBy: true,
-  noCache: true
-}));
-app.use(cookieParser(process.env.COOKIE_SECRET));
-app.set('port', process.env.PORT || 3000);
-app.use(logger('dev'));
-app.set('views', 'views');
-app.set('view engine', 'pug');
-app.use(compression());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
 
 app.options('*', cors());
 const devWhitelist: RegExp[] = [
@@ -41,6 +29,21 @@ const devWhitelist: RegExp[] = [
 app.use(cors({
   origin: process.env.NODE_ENV === 'development' ? devWhitelist : prodWhitelist
 }));
+
+app.use(helmet({
+  hidePoweredBy: true,
+  noCache: true
+}));
+
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.set('port', process.env.PORT || 3000);
+app.use(logger('dev'));
+app.set('views', 'views');
+app.set('view engine', 'pug');
+app.use(compression());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const unprotectedRoutes: UnprotectedRoute[] = [

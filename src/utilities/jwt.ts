@@ -1,8 +1,8 @@
 import * as jwt from 'jsonwebtoken';
+import * as mongoose from 'mongoose';
 
-import User from '../models/user';
-
-const secret = process.env.TOKEN_SECRET;
+const secret = process.env.TOKEN_SECRET,
+  User = mongoose.model('User');
 
 function sign(payload, options) {
   const jwtToken = jwt.sign(payload, secret, options);
@@ -24,7 +24,7 @@ async function protect(req, res, next) {
 
   if(!user) return res.status(401).json({error: 'Invalid authorization header'});
 
-  req.currentUser = await User.findOne({_id: user._id})
+  req.current_user = await User.findOne({_id: user._id})
     .select('-__v');
 
   next();
