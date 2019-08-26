@@ -7,7 +7,8 @@ function init() {
   (<any>mongoose).Promise = bluebird;
 
   if(process.env.NODE_ENV === 'development') mongoose.set('debug', true);
-  mongoose.connect(process.env.MONGO_URI, {useMongoClient: true})
+
+  mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log.bind(console, 'Database connected'))
     .catch(error => console.error.bind(console, `Error connecting to database: ${error}`));
 
